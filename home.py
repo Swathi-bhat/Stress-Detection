@@ -14,7 +14,7 @@ def chatbot_response(user_input):
 
     if "hello" in user_input or "hi" in user_input:
         return "Hi there! 😊 How can I assist you today?"
-    elif "stressed" in user_input or "depressed" in user_input or "not feeling good" in user_input:
+    elif "stress" in user_input or "depressed" in user_input or "not feeling good" in user_input:
         return "I'm really sorry to hear that. 🌼 Managing stress can be challenging. You can find some helpful tips and strategies in the Explore page."
     elif "overcome my stress" in user_input or "relieve stress" in user_input:
         return "That's a great question! 🎶 Listening to music can be a wonderful way to alleviate stress. You can find song recommendations based on your current stress level."
