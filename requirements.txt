@@ -8,3 +8,4 @@ translate
 transformers
 torch
 opencv-python
+PyAudio
