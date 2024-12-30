@@ -5,9 +5,116 @@ import pytz
 from datetime import datetime
 import plotly.express as px
 import plotly.graph_objects as go
+from streamlit_chat import message
+import cv2
+from fer import FER
+import time
+
+def emotion_detection():
+    st.title("Emotion Detection")
+    if st.button("Start Emotion Detection"):
+        cap = cv2.VideoCapture(0)
+        stframe = st.empty()
+        end_time = time.time() + 10  # Run for 10 seconds
+
+        # Initialize emotion detector
+        detector = FER()
+        # Exclude 'disgust', 'surprise', and 'neutral' from counts
+        emotion_counts = {emotion: 0 for emotion in ['angry', 'fear', 'happy', 'sad']}
+
+        while time.time() < end_time:
+            ret, frame = cap.read()
+            if not ret:
+                st.error("Failed to capture video.")
+                break
+            
+            # Analyze the frame for emotions
+            emotions = detector.detect_emotions(frame)
+            if emotions:
+                dominant_emotion = emotions[0]['emotions']
+                # Count the detected emotions
+                for emotion, score in dominant_emotion.items():
+                    if emotion in emotion_counts:  # Only count the emotions we are tracking
+                        emotion_counts[emotion] += score
+
+            # Display the frame in Streamlit
+            stframe.image(frame, channels="BGR")
+
+        cap.release()
+        cv2.destroyAllWindows()
+
+        # Calculate the total score for normalization
+        total_score = sum(emotion_counts.values())
+        final_emotions = {emotion: (score / total_score) * 100 if total_score > 0 else 0 for emotion, score in emotion_counts.items()}
+        
+        # Display the final results
+        st.success("Emotion detection finished.")
+        st.write("Final Detected Emotions (as percentages):")
+        for emotion, score in final_emotions.items():
+            st.write(f"{emotion.capitalize()}: {score:.2f}%")
+
+
+def chatbot_response(user_input):
+    user_input = user_input.lower()
+
+    if "hello" in user_input or "hi" in user_input:
+        return "Hi there! 😊 How can I assist you today?"
+    elif "stressed" in user_input or "depressed" in user_input or "not feeling good" in user_input:
+        return "I'm really sorry to hear that. 🌼 Managing stress can be challenging. You can find some helpful tips and strategies in the Explore page."
+    elif "overcome my stress" in user_input or "relieve stress" in user_input:
+        return "That's a great question! 🎶 Listening to music can be a wonderful way to alleviate stress. You can find song recommendations based on your current stress level."
+    elif "help" in user_input:
+        return "Of course! 🤗 Feel free to ask me about stress management techniques, music recommendations, or how to navigate this app."
+    elif "bye" in user_input:
+        return "Goodbye! 👋 Take care, and don’t hesitate to return if you need anything else!"
+    
+    elif "thank you" in user_input:
+        return "You’re welcome! If you have any more questions or need further assistance in the future, feel free to reach out. 😊"
+    else:
+        return "I'm sorry, I didn't quite catch that. Could you please rephrase your question?"
+
+def chatbot_page():
+    if 'messages' not in st.session_state:
+        st.session_state.messages = []
+
+    st.title("Chatbot")
+    user_input = st.text_input("You: ", "")
+
+    if user_input:
+        response = chatbot_response(user_input)
+        st.session_state.messages.append({"role": "user", "content": user_input})
+        st.session_state.messages.append({"role": "bot", "content": response})
+
+    for i, msg in enumerate(st.session_state.messages):
+        message(msg["content"], is_user=(msg["role"] == "user"), key=str(i))
+
+
+def recommend_music(stress_level):
+    if stress_level <= 3:
+        return[
+            ("Happy Day", "music/4.mp3","images/G.jpg"),
+            ("Island Breeze", "music/5.mp3","images/H.jpg"),
+            ("Playing in colours", "music/6.mp3","images/I.jpg"),
+        ]
+    
+    elif stress_level <= 6:
+        return[
+            ("Sunrise Serenade", "music/7.mp3","images/D.jpg"),
+            ("Rock Music", "music/9.mp3","images/E.jpg"),
+            ("Sunshine Whistle", "music/8.mp3","images/F.jpg"),
+        ]
+    else:
+        return[
+            ("Breeze Groove", "music/1.mp3","images/A.jpg"),
+            ("Good Times", "music/3.mp3","images/B.jpg"),
+            ("Endless party", "music/2.mp3","images/C.jpg"),
+        ]
+
 
 def home():
-    page = st.sidebar.radio("Go to", ["Home","About Us", "Stress Assessment", "History",  "Logout"])
+    
+    tab1, tab2, tab5, tab3, tab4, tab6= st.tabs(["Home", "AI Assistant","Stress Diary", "Emotion Detection","History","Explore"])
+    # page = st.sidebar.radio("Go to", ["Home","AI Assistant","Emotion Detection","Stress Diary", "Explore", "History", "Logout"])
     
     if 'username' in st.session_state:
         name=st.session_state['username']
@@ -16,12 +123,20 @@ def home():
         database_name=user_row['Database'].iloc[0]
         database=pd.read_csv('Database/{}'.format(database_name))
 
-    if page == "Home":
+    with tab1:
         if 'username' in st.session_state:
             st.title(f"Welcome, {st.session_state['username']}!")
+            st.subheader("How to take the test")
+            st.write("""
+            - **Begin by taking a deep breath.** This helps you relax and speak clearly.
+            - **Click the 'Recognize and Analyse' button to begin recording your voice.** Speak naturally and clearly.
+            - **Speak for a few seconds.** Talk about anything you like or describe how you feel.
+            - **Wait for the system to analyze your voice.** The analysis will determine if you might be experiencing depression.
+            - **Review your results.** The system will display your state of depression and detected emotions.
+            """)
 
-            st.write("Select the language and speak into the microphone.")
-            language = st.radio("Select language:", ("English", "Kannada"))
+            st.subheader("Select the language and speak into the microphone.")
+            language = st.radio("Choose:", ("English", "Kannada"))
             if st.button("Recognize and Analyze"):
                 recognized_text, translated_text = models.recognize_and_translate(language)
                 if recognized_text and translated_text:
@@ -52,47 +167,14 @@ def home():
                     })
                     
                     database = pd.concat([new_row, database], ignore_index=True)
-                    database.to_csv('Database/{}'.format(database_name), index=False)          
-
-
-
-
-
-    elif page == "Stress Assessment":
-        st.title("Stress Assessment")
-        st.subheader("Before Taking the Test")
-        st.write("""
-        - Find a quiet place where you won't be disturbed.
-        - Ensure your microphone is working correctly.
-        - Sit comfortably and relax.
-        - Make sure there is minimal background noise.
-        """)
-
-        st.subheader("Instructions")
-        st.write("""
-        - **Begin by taking a deep breath.** This helps you relax and speak clearly.
-        - **Click the 'Start' button to begin recording your voice.** Speak naturally and clearly.
-        - **Speak for a few seconds.** Talk about anything you like or describe how you feel.
-        - **Wait for the system to analyze your voice.** The analysis will determine if you might be experiencing depression.
-        - **Review your results.** The system will display your state of depression and detected emotions.
-        """)
-
-        st.subheader("After the Test")
-        st.write("""
-        - You can view the analysis of your emotional state.
-        - Your test records will be saved and can be accessed in the 'History' section for future reference.
-        - Regular assessments can help you monitor your stress levels over time.
-        """)
-
-
-    elif page == "History":
-        st.title("History")
-        database=pd.read_csv('Database/{}'.format(database_name))
-        st.table(database)
-
-        # Convert timestamp column to datetime
-        database['timestamp'] = pd.to_datetime(database['timestamp'])
-
+                    database.to_csv('Database/{}'.format(database_name), index=False) 
+    with tab2:
+        chatbot_page()  
+    
+    with tab3:
+        emotion_detection()
+               
+    with tab4:
         # Streamlit app
         st.title("Depression Analysis Over Time")
 
@@ -120,40 +202,137 @@ def home():
         )
 
         st.plotly_chart(fig)
+        
+         
+        database=pd.read_csv('Database/{}'.format(database_name))
+        st.table(database)
 
-    elif page == "About Us":
-        st.title("About us  ")
-        st.write("""
-        ## Why Stress Analysis?
-        Stress is a prevalent issue affecting individuals worldwide, contributing to a variety of physical and mental health challenges. Prolonged exposure to stress can lead to serious conditions such as anxiety, depression, cardiovascular diseases, and weakened immune response. Therefore, understanding and managing stress is essential for maintaining overall health and well-being.
-        Our mission is to provide a user-friendly tool that leverages advanced natural language processing (NLP) techniques to assess stress levels from speech. By harnessing the power of machine learning and artificial intelligence, we aim to help individuals identify their stress levels and take proactive steps towards better mental health.
+        # Convert timestamp column to datetime
+        database['timestamp'] = pd.to_datetime(database['timestamp'])
+        
+    with tab5:
+        st.title("Stress Diary")
+        st.write("Log your daily stress levels and notes below.")
 
-        ## What We Are Doing
-        Our innovative stress analysis tool integrates several state-of-the-art technologies to offer a comprehensive evaluation of stress. Here’s how it works:
+        diary_file_path = 'Database/{}_stress_diary.csv'.format(database_name)  # Define the path here
+        diary_entry = st.text_area("Notes", "")
+        stress_level = st.slider("Stress Level (0-10)", 0, 10)
 
-        #### Speech Recognition and Translation
-        Our tool starts by capturing spoken words using a microphone. We utilize Google's Speech Recognition API to accurately convert spoken language into text. For users who speak Kannada, we provide seamless translation to English using a robust translation API. This ensures that the analysis is precise and accessible to a broader audience.
+        if st.button("Save Entry"):
+            new_entry = pd.DataFrame({
+                'timestamp': [datetime.now().strftime('%d-%m-%Y %H:%M:%S')],
+                'stress_level': [stress_level],
+                'notes': [diary_entry]
+            })
 
-        #### Sentiment Analysis
-        Once the speech is converted to text, we employ a BERT-based model fine-tuned for sentiment analysis. BERT (Bidirectional Encoder Representations from Transformers) is a cutting-edge NLP model that excels in understanding the context and nuances of text. Our sentiment analysis model evaluates the emotional tone of the spoken words, classifying them into categories such as positive, neutral, or negative. This helps in determining the overall sentiment and identifying potential signs of stress or depression.
+            # Check if diary file exists, if not, create it
+            try:
+                diary_database = pd.read_csv(diary_file_path)
+            except FileNotFoundError:
+                diary_database = pd.DataFrame(columns=['timestamp', 'stress_level', 'notes'])
 
-        #### Emotion Detection
-        In addition to sentiment analysis, we use a specialized emotion detection model to pinpoint specific emotions expressed in the speech. The model identifies and quantifies emotions such as happiness, anger, and sadness. By standardizing these detected emotions, we provide a clear and comprehensible picture of the emotional state. This multi-faceted approach ensures that we capture a wide range of emotional cues, offering a more accurate and holistic assessment of stress levels.
+            diary_database = pd.concat([new_entry, diary_database], ignore_index=True)
+            diary_database.to_csv(diary_file_path, index=False)
+            st.success("Diary entry saved!")
 
-        #### Comprehensive Analysis
-        By combining speech recognition, translation, sentiment analysis, and emotion detection, our tool offers a comprehensive analysis of the user’s emotional state. This multi-layered approach allows us to provide detailed insights into whether a person might be experiencing stress, depression, or other emotional challenges. Our goal is to empower users with the information they need to understand their mental health better and seek appropriate support if necessary.
+        # Display previous entries
+        st.subheader("Previous Entries")
+        try:
+            diary_database = pd.read_csv(diary_file_path)
+            st.table(diary_database)
+        except FileNotFoundError:
+            st.write("No entries found yet.")
+            
+    with tab6:
+        st.title("Explore")
+        
+        diary_file_path = 'Database/{}_stress_diary.csv'.format(database_name)
+        try:
+            diary_database = pd.read_csv(diary_file_path)           
+            diary_database['timestamp'] = pd.to_datetime(diary_database['timestamp'], format="%d-%m-%Y %H:%M:%S")
 
-        #### User-Friendly Interface
-        Our platform is designed to be intuitive and user-friendly, making it accessible to individuals with varying levels of technical expertise. Whether you are a healthcare professional seeking to monitor patients' stress levels or an individual looking to understand your emotional well-being, our tool is here to assist you.
+            # diary_database['timestamp'] = pd.to_datetime(diary_database['timestamp'])
+            diary_database = diary_database.sort_values(by='timestamp')
+            latest_entry = diary_database.iloc[-1]
+            stress_level = latest_entry['stress_level']
+            st.write(f"Your latest recorded stress level is: {stress_level}/10")
+            st.write("---")  # Separator
 
-        #### Future Developments
-        We are continuously working to enhance our stress analysis tool by integrating new features and improving existing functionalities. Our future plans include adding support for more languages, expanding the range of detectable emotions, and incorporating additional stress indicators such as voice tone and speech patterns. We are committed to staying at the forefront of NLP and AI research to provide the best possible stress assessment solutions.
-        We believe that by leveraging technology, we can make a significant impact on mental health awareness and support. Thank you for choosing our stress analysis tool. We are here to help you on your journey towards better mental health and well-being.
-        """)
-    
-    elif page == "Logout":
-        st.session_state.page = 'login'
-        st.rerun()
+            # Recommend music based on the latest stress level
+            st.subheader("Music Recommendations Based on Stress Levels")
+            recommended_songs = recommend_music(stress_level)
+            
+            num_columns = 3 
+           
+            cols = st.columns(num_columns)  # Create columns
+
+            for i, (song, link, img_url) in enumerate(recommended_songs):
+                col_index = i % num_columns  # Determine the current column index
+                with cols[col_index]:
+                    st.image(img_url,use_column_width=True)  # Display album art
+                    st.write(f"**{song}**")  # Display song title
+                    st.audio(link)  # Audio player
+
+# Adjust the layout to handle the last row if it has fewer than num_columns songs
+            if len(recommended_songs) % num_columns != 0:
+                st.write("")
+
+        except FileNotFoundError:
+            st.write("No stress diary entries found. Please log your stress levels in the 'Stress Diary' section.")
+        st.write("---")  # Separator
+
+
+        # Mind Exercises Section
+        st.subheader("Mind Exercises")
+        st.write("Try these simple exercises to calm your mind:")
+
+        # Example exercises
+        exercises = [
+            {
+                "title": "Easy Pose",
+                "description": "Sit cross-legged with your back straight and shoulders relaxed. Rest your hands on your knees or in your lap, palms facing up. Close your eyes and focus on your breath, allowing your mind to calm and your body to relax. This pose promotes a sense of peace and stability.",
+                "video": "https://www.youtube.com/watch?v=1iDTARK8Zrg" 
+                
+            },
+            {
+                "title": "Surya Namaskara",
+                "description": "Surya Namaskara (Sun Salutation) is a series of 12 yoga poses performed in a flowing sequence, typically starting from a standing position and moving through forward bends, lunges, and backbends.",
+                "video": "https://www.youtube.com/watch?v=ktqaQ1oTfYI   "  
+            },
+            {
+                "title": "Upward Facing Dog",
+                "description": "Begin by lying face down, then place your palms on the ground beneath your shoulders. Press into your hands, lifting your chest and thighs off the floor while arching your back. Keep your shoulders relaxed and gaze forward, allowing your heart to open. This pose strengthens the spine, stretches the chest, and improves posture. Hold for several breaths, feeling the invigorating energy flow through your body.",
+                "video": "https://www.youtube.com/watch?v=pVmOOluGAv8"  # Add a path to your video
+            },
+            {
+                "title": "Corpse Pose",
+                "description": "Lie flat on your back with your legs extended and arms relaxed alongside your body, palms facing up. Close your eyes and take deep breaths, allowing your body to fully relax and release tension. Focus on your breath and let go of any thoughts. Hold for several minutes, embracing the stillness and calm.",
+                "video": "https://www.youtube.com/watch?v=1VYlOKUdylM"  
+            },
+        ]
+
+        for exercise in exercises:
+            st.write(exercise["title"])
+            st.video(exercise["video"])
+            st.write(exercise["description"])
+            st.write("---")  # Separator
+  
+        # Meditation Resources Section
+        st.subheader("Guided Meditation")
+        st.write("Here are some guided meditation resources to help you relax:")
+        
+        meditation_links = [
+            {"title": "The Body Scan Meditation", "link": "music/Body.mp3"},
+            {"title": "Mindful Meditation", "link": "music/Breathing.wav"},
+            {"title": "Connection Meditation", "link": "music/Connection.wav"},
+        ]
+
+        for meditation in meditation_links:
+            st.write(f"- {meditation['title']}")
+            st.audio(meditation["link"])
+    # with tab7:
+    #     st.session_state.page = 'login'
+    #     st.rerun()
     
 
         
