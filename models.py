@@ -3,7 +3,6 @@ import speech_recognition as sr
 from translate import Translator
 from transformers import AutoTokenizer, AutoModelForSequenceClassification
 import torch
-import cv2
 from fer import FER
 
 fer = FER()
