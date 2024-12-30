@@ -3,9 +3,7 @@ import speech_recognition as sr
 from translate import Translator
 from transformers import AutoTokenizer, AutoModelForSequenceClassification
 import torch
-from fer import FER
 
-fer = FER()
 # Load BERT tokenizer and model for sentiment analysis
 tokenizer = AutoTokenizer.from_pretrained('nlptown/bert-base-multilingual-uncased-sentiment')
 model = AutoModelForSequenceClassification.from_pretrained('nlptown/bert-base-multilingual-uncased-sentiment')
@@ -86,4 +84,3 @@ def emotion_analysis(text):
     except Exception as e:
         st.error(f"Emotion analysis error: {e}")
         return None
-    
