@@ -3,6 +3,7 @@ pandas
 plotly
 pytz
 fer
+pyaudio
 streamlit-chat
 speechrecognition
 translate
