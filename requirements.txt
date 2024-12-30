@@ -8,4 +8,4 @@ speechrecognition
 translate
 transformers
 torch
-opencv-python-headless
+opencv-python
