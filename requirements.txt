@@ -8,4 +8,6 @@ translate
 transformers
 torch
 opencv-python
+pydub
+fer
 
