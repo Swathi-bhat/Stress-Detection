@@ -6,52 +6,8 @@ from datetime import datetime
 import plotly.express as px
 import plotly.graph_objects as go
 from streamlit_chat import message
-import cv2
 from fer import FER
 import time
-
-def emotion_detection():
-    st.title("Emotion Detection")
-    if st.button("Start Emotion Detection"):
-        cap = cv2.VideoCapture(0)
-        stframe = st.empty()
-        end_time = time.time() + 10  # Run for 10 seconds
-
-        # Initialize emotion detector
-        detector = FER()
-        # Exclude 'disgust', 'surprise', and 'neutral' from counts
-        emotion_counts = {emotion: 0 for emotion in ['angry', 'fear', 'happy', 'sad']}
-
-        while time.time() < end_time:
-            ret, frame = cap.read()
-            if not ret:
-                st.error("Failed to capture video.")
-                break
-            
-            # Analyze the frame for emotions
-            emotions = detector.detect_emotions(frame)
-            if emotions:
-                dominant_emotion = emotions[0]['emotions']
-                # Count the detected emotions
-                for emotion, score in dominant_emotion.items():
-                    if emotion in emotion_counts:  # Only count the emotions we are tracking
-                        emotion_counts[emotion] += score
-
-            # Display the frame in Streamlit
-            stframe.image(frame, channels="BGR")
-
-        cap.release()
-        cv2.destroyAllWindows()
-
-        # Calculate the total score for normalization
-        total_score = sum(emotion_counts.values())
-        final_emotions = {emotion: (score / total_score) * 100 if total_score > 0 else 0 for emotion, score in emotion_counts.items()}
-        
-        # Display the final results
-        st.success("Emotion detection finished.")
-        st.write("Final Detected Emotions (as percentages):")
-        for emotion, score in final_emotions.items():
-            st.write(f"{emotion.capitalize()}: {score:.2f}%")
 
 
 def chatbot_response(user_input):
@@ -113,7 +69,7 @@ def recommend_music(stress_level):
 
 def home():
     
-    tab1, tab2, tab5, tab3, tab4, tab6= st.tabs(["Home", "AI Assistant","Stress Diary", "Emotion Detection","History","Explore"])
+    tab1, tab2, tab5, tab4, tab6= st.tabs(["Home", "AI Assistant","Stress Diary","History","Explore"])
     # page = st.sidebar.radio("Go to", ["Home","AI Assistant","Emotion Detection","Stress Diary", "Explore", "History", "Logout"])
     
     if 'username' in st.session_state:
@@ -170,10 +126,7 @@ def home():
                     database.to_csv('Database/{}'.format(database_name), index=False) 
     with tab2:
         chatbot_page()  
-    
-    with tab3:
-        emotion_detection()
-               
+        
     with tab4:
         # Streamlit app
         st.title("Depression Analysis Over Time")
