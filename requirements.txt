@@ -1,6 +1,5 @@
-streamlit==1.24.0
-pandas==2.1.0
-numpy>=1.23.0
+streamlit
+pandas
 plotly
 pytz
 fer
@@ -9,4 +8,4 @@ speechrecognition
 translate
 transformers
 torch
-opencv-python-headless==4.8.0.74
+opencv-python-headless
