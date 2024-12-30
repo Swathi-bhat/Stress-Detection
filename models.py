@@ -31,30 +31,35 @@ def recognize_and_translate(uploaded_file, language='en'):
     recognizer = sr.Recognizer()
     translator = Translator(from_lang='kn', to_lang='en') if language == 'Kannada' else None
     
-    # If the uploaded file is MP3, convert it to WAV first
-    if uploaded_file.type == "audio/mp3":
-        uploaded_file = convert_mp3_to_wav(uploaded_file)
-    
-    with sr.AudioFile(uploaded_file) as source:
-        st.info("Processing audio...")
-        audio = recognizer.record(source)  # Read the entire audio file
+    # Check if the uploaded file is in the correct format
+    if isinstance(uploaded_file, io.BytesIO):  # Ensure the uploaded file is in the expected format
+        # If the uploaded file is MP3, convert it to WAV first
+        if uploaded_file.name.endswith('.mp3'):
+            uploaded_file = convert_mp3_to_wav(uploaded_file)
+        
+        with sr.AudioFile(uploaded_file) as source:
+            st.info("Processing audio...")
+            audio = recognizer.record(source)  # Read the entire audio file
 
-    try:
-        # Recognize speech using Google Web Speech API
-        if language == 'Kannada':
-            recognized_text = recognizer.recognize_google(audio, language='kn-IN')
-            translated_text = translator.translate(recognized_text)
-        else:
-            recognized_text = recognizer.recognize_google(audio, language='en-US')
-            translated_text = recognized_text
+        try:
+            # Recognize speech using Google Web Speech API
+            if language == 'Kannada':
+                recognized_text = recognizer.recognize_google(audio, language='kn-IN')
+                translated_text = translator.translate(recognized_text)
+            else:
+                recognized_text = recognizer.recognize_google(audio, language='en-US')
+                translated_text = recognized_text
 
-        return recognized_text, translated_text
+            return recognized_text, translated_text
 
-    except sr.UnknownValueError:
-        st.error("Google Speech Recognition could not understand the audio")
-        return None, None
-    except sr.RequestError as e:
-        st.error(f"Could not request results from Google Speech Recognition service; {e}")
+        except sr.UnknownValueError:
+            st.error("Google Speech Recognition could not understand the audio")
+            return None, None
+        except sr.RequestError as e:
+            st.error(f"Could not request results from Google Speech Recognition service; {e}")
+            return None, None
+    else:
+        st.error("Uploaded file is not in the correct format.")
         return None, None
 
 def sentiment_analysis(text):
