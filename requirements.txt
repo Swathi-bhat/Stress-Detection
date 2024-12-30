@@ -1,0 +1,11 @@
+streamlit
+pandas
+plotly
+pytz
+opencv-python
+fer
+streamlit-chat
+speechrecognition
+translate
+transformers
+torch
