@@ -1,6 +1,9 @@
 import streamlit as st
 import pandas as pd
 
+
+
+
 def login():
     # Initialize session state if it doesn't exist
     if 'phone' not in st.session_state:
@@ -56,7 +59,7 @@ def login():
                     st.rerun()
 
         with subcol2:
-            signup_clicked = st.button("Go to Signup")
+            signup_clicked = st.button("Signup")
             if signup_clicked:
                 st.session_state.page = 'signup'
                 st.rerun()
