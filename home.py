@@ -247,7 +247,7 @@ def home():
             st.write(f"- {meditation['title']}")
             st.audio(meditation["link"])
 
-          diary_file_path = 'Database/{}_stress_diary.csv'.format(database_name)
+        diary_file_path = 'Database/{}_stress_diary.csv'.format(database_name)
         
         try:
             diary_database = pd.read_csv(diary_file_path)           
