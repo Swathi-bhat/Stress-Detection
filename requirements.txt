@@ -13,5 +13,6 @@ fer
 twilio
 nltk
 sounddevice
+google-cloud-speech
 
 
