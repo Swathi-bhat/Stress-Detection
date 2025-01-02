@@ -226,7 +226,7 @@ def home():
         ]
 
         for exercise in exercises:
-            st.subheader(exercise["title"])
+            st.write(exercise["title"])
             st.video(exercise["video"])
             st.write(exercise["description"])
             st.write("---")  # Separator
