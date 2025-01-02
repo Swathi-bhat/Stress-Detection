@@ -8,13 +8,12 @@ import plotly.graph_objects as go
 from streamlit_chat import message
 import time
 
-
 def chatbot_response(user_input):
     user_input = user_input.lower()
 
     if "hello" in user_input or "hi" in user_input:
         return "Hi there! 😊 How can I assist you today?"
-    elif "stress" in user_input or "depressed" in user_input or "not feeling good" in user_input:
+    elif "stressed" in user_input or "depressed" in user_input or "not feeling good" in user_input:
         return "I'm really sorry to hear that. 🌼 Managing stress can be challenging. You can find some helpful tips and strategies in the Explore page."
     elif "overcome my stress" in user_input or "relieve stress" in user_input:
         return "That's a great question! 🎶 Listening to music can be a wonderful way to alleviate stress. You can find song recommendations based on your current stress level."
@@ -65,7 +64,6 @@ def recommend_music(stress_level):
             ("Endless party", "music/2.mp3","images/C.jpg"),
         ]
 
-
 def home():
     
     tab1, tab2, tab5, tab4, tab6= st.tabs(["Home", "AI Assistant","Stress Diary","History","Explore"])
@@ -100,9 +98,10 @@ def home():
                 
                     sentiment_score = models.sentiment_analysis(translated_text)
                     st.write(sentiment_score)
-                    if sentiment_score in [1,2,3]:  # Scores 1,2,3 indicate negative sentiment
+                    if sentiment_score in [1,2,3]:  
                         st.warning("Signs of Depression found")
                         depression='Depression'
+                        
                     else:
                         st.success("No signs of depression")
                         depression='No Depression'
@@ -125,7 +124,7 @@ def home():
                     database.to_csv('Database/{}'.format(database_name), index=False) 
     with tab2:
         chatbot_page()  
-        
+               
     with tab4:
         # Streamlit app
         st.title("Depression Analysis Over Time")
