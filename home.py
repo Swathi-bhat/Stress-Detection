@@ -6,7 +6,6 @@ from datetime import datetime
 import plotly.express as px
 import plotly.graph_objects as go
 from streamlit_chat import message
-from fer import FER
 import time
 import twilio
 from twilio.rest import Client
