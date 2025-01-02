@@ -195,8 +195,6 @@ def home():
             st.write("No entries found yet.")
             
     with tab6:
-        st.title("Explore")
-
 
         # Mind Exercises Section
         st.subheader("Mind Exercises")
