@@ -196,41 +196,6 @@ def home():
             
     with tab6:
         st.title("Explore")
-        
-        diary_file_path = 'Database/{}_stress_diary.csv'.format(database_name)
-        try:
-            diary_database = pd.read_csv(diary_file_path)           
-            diary_database['timestamp'] = pd.to_datetime(diary_database['timestamp'], format="%d-%m-%Y %H:%M:%S")
-
-            # diary_database['timestamp'] = pd.to_datetime(diary_database['timestamp'])
-            diary_database = diary_database.sort_values(by='timestamp')
-            latest_entry = diary_database.iloc[-1]
-            stress_level = latest_entry['stress_level']
-            st.write(f"Your latest recorded stress level is: {stress_level}/10")
-            st.write("---")  # Separator
-
-            # Recommend music based on the latest stress level
-            st.subheader("Music Recommendations Based on Stress Levels")
-            recommended_songs = recommend_music(stress_level)
-            
-            num_columns = 3 
-           
-            cols = st.columns(num_columns)  # Create columns
-
-            for i, (song, link, img_url) in enumerate(recommended_songs):
-                col_index = i % num_columns  # Determine the current column index
-                with cols[col_index]:
-                    st.image(img_url,use_column_width=True)  # Display album art
-                    st.write(f"**{song}**")  # Display song title
-                    st.audio(link)  # Audio player
-
-# Adjust the layout to handle the last row if it has fewer than num_columns songs
-            if len(recommended_songs) % num_columns != 0:
-                st.write("")
-
-        except FileNotFoundError:
-            st.write("No stress diary entries found. Please log your stress levels in the 'Stress Diary' section.")
-        st.write("---")  # Separator
 
 
         # Mind Exercises Section
@@ -281,6 +246,42 @@ def home():
         for meditation in meditation_links:
             st.write(f"- {meditation['title']}")
             st.audio(meditation["link"])
+
+          diary_file_path = 'Database/{}_stress_diary.csv'.format(database_name)
+        
+        try:
+            diary_database = pd.read_csv(diary_file_path)           
+            diary_database['timestamp'] = pd.to_datetime(diary_database['timestamp'], format="%d-%m-%Y %H:%M:%S")
+
+            # diary_database['timestamp'] = pd.to_datetime(diary_database['timestamp'])
+            diary_database = diary_database.sort_values(by='timestamp')
+            latest_entry = diary_database.iloc[-1]
+            stress_level = latest_entry['stress_level']
+            st.write(f"Your latest recorded stress level is: {stress_level}/10")
+            st.write("---")  # Separator
+
+            # Recommend music based on the latest stress level
+            st.subheader("Music Recommendations Based on Stress Levels")
+            recommended_songs = recommend_music(stress_level)
+            
+            num_columns = 3 
+           
+            cols = st.columns(num_columns)  # Create columns
+
+            for i, (song, link, img_url) in enumerate(recommended_songs):
+                col_index = i % num_columns  # Determine the current column index
+                with cols[col_index]:
+                    st.image(img_url,use_column_width=True)  # Display album art
+                    st.write(f"**{song}**")  # Display song title
+                    st.audio(link)  # Audio player
+
+# Adjust the layout to handle the last row if it has fewer than num_columns songs
+            if len(recommended_songs) % num_columns != 0:
+                st.write("")
+
+        except FileNotFoundError:
+            st.write("No stress diary entries found. Please log your stress levels in the 'Stress Diary' section.")
+        st.write("---")  # Separator
     # with tab7:
     #     st.session_state.page = 'login'
     #     st.rerun()
