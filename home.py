@@ -290,8 +290,8 @@ def home():
         
         meditation_links = [
             {"title": "The Body Scan Meditation", "link": "music/Body.mp3"},
-            {"title": "Mindful Meditation", "link": "music/Breathing.wav"},
-            {"title": "Connection Meditation", "link": "music/Connection.wav"},
+            {"title": "Mindful Meditation", "link": "music/Breathing.mp3"},
+            {"title": "Connection Meditation", "link": "music/Connection.mp3"},
         ]
 
         for meditation in meditation_links:
