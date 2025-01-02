@@ -197,8 +197,8 @@ def home():
     with tab6:
 
         # Mind Exercises Section
-        st.subheader("Mind Exercises")
-        st.write("Try these simple exercises to calm your mind:")
+        st.title("Mind Exercises")
+        st.write("Try these simple exercises to calm your mind")
 
         # Example exercises
         exercises = [
@@ -226,7 +226,7 @@ def home():
         ]
 
         for exercise in exercises:
-            st.write(exercise["title"])
+            st.subheader(exercise["title"])
             st.video(exercise["video"])
             st.write(exercise["description"])
             st.write("---")  # Separator
