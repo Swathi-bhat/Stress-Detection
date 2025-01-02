@@ -12,5 +12,5 @@ pydub
 fer
 twilio
 nltk
-opencv
+opencv-python
 
