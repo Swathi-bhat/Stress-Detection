@@ -12,5 +12,6 @@ pydub
 fer
 twilio
 nltk
+PyAudio
 
 
