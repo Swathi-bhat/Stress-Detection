@@ -3,11 +3,14 @@ pandas
 plotly
 pytz
 streamlit-chat
-speechrecognition
+SpeechRecognition
 translate
 transformers
 torch
 opencv-python
 pydub
 fer
+twilio
+nltk
+opencv
 
